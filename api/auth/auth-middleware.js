@@ -27,7 +27,7 @@ function restricted(req, res, next) {
 */
 async function checkUsernameFree(req, res, next) {
   if( await Users.findBy({ username: req.user.username }).first() != null) {
-      next({ status: 400, message: `user '${req.user.username}' already exists!` });
+      next({ status: 422, message: `username taken` });
   } else {
       next();
   }
@@ -60,7 +60,7 @@ async function checkUsernameExists(req, res, next) {
 */
 function checkPasswordLength(req, res, next) {
   if(!req.body.password || req.body.password.length < 3) {
-    next({ status: 400, message: 'password is required and must be longer than 3 characters' });
+    next({ status: 422, message: 'password is required and must be longer than 3 characters' });
 } else {
     req.user = {
         username: req.body.username.trim(),

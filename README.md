@@ -64,3 +64,12 @@ The database `auth.db3` includes a single `users` table:
 ### Task 3: Stretch Goals
 
 - Build a React application that implements components to register, login and view a list of users. Gotta keep sharpening your React skills.
+
+
+// PROJECT SUMMARY: created application that required user login and authentication. 
+-When username and password is POST on api/auth/register, middleware checks if name 
+    is unique and password is 3 char long. It then applies bcrypt to it, to store the password as crypto. 
+-When username and password is POST on api/auth/login, it checks if that account exists (from previous step). Plain text password is able to be compared cryptography number and then "logs in" user for an "active session"
+-GET api/users is only accesible after above succesful log in. Returns error message if "log in session" is not active/
+-GET api/auth/logout ends the "log in session"
+
