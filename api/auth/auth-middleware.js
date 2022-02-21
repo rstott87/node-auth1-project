@@ -1,3 +1,5 @@
+
+const Users = require('../users/users-model');
 /*
   If the user does not have a session saved in the server
 
@@ -6,8 +8,13 @@
     "message": "You shall not pass!"
   }
 */
-function restricted() {
 
+function restricted(req, res, next) {
+  if(req.session.user == null) {
+      next({ status: 401, message: 'this endpoint is restricted!' });
+  } else {
+      next();
+  }
 }
 
 /*
@@ -18,10 +25,13 @@ function restricted() {
     "message": "Username taken"
   }
 */
-function checkUsernameFree() {
-
+async function checkUsernameFree(req, res, next) {
+  if( await Users.findBy({ username: req.user.username }).first() != null) {
+      next({ status: 400, message: `user '${req.user.username}' already exists!` });
+  } else {
+      next();
+  }
 }
-
 /*
   If the username in req.body does NOT exist in the database
 
@@ -30,8 +40,14 @@ function checkUsernameFree() {
     "message": "Invalid credentials"
   }
 */
-function checkUsernameExists() {
-
+async function checkUsernameExists(req, res, next) {
+  const user = await Users.findBy({ username: req.user.username }).first();
+  if(user == null) {
+      next({ status: 400, message: `user '${req.user.username}' does not exist!` });
+  } else {
+      req.user = user;
+      next();
+  }
 }
 
 /*
@@ -42,8 +58,22 @@ function checkUsernameExists() {
     "message": "Password must be longer than 3 chars"
   }
 */
-function checkPasswordLength() {
-
+function checkPasswordLength(req, res, next) {
+  if(!req.body.password || req.body.password.length < 3) {
+    next({ status: 400, message: 'password is required and must be longer than 3 characters' });
+} else {
+    req.user = {
+        username: req.body.username.trim(),
+        password: req.body.password.trim(),
+    };
+    next();
+}
 }
 
 // Don't forget to add these to the `exports` object so they can be required in other modules
+module.exports = {
+  restricted,
+  checkUsernameFree,
+  checkPasswordLength,
+  checkUsernameExists
+}
