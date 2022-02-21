@@ -29,18 +29,17 @@ const { checkPasswordLength, checkUsernameFree,checkUsernameExists} = require('.
     "message": "Password must be longer than 3 chars"
   }
  */
-
-  router.post('/register',  checkPasswordLength, checkUsernameFree, async (req, res, next) => {
-
-      res.send("hello")
-    // try {
-    //     const user = req.user;
-    //     const password = req.password;
-    //     res.send(user, password);
-    // } catch(err) {
-    //     next(err);
-    // }
-  })
+  router.post('/register',  checkPasswordLength, checkUsernameFree, (req, res, next) => {
+    try {
+      const user = req.user;
+      const hash = bcrypt.hashSync(user.password, 12);
+      user.password = hash;
+      let result = Users.add(user)
+      res.status(201).json(result);
+    } catch(err) {
+      next(err);
+    }
+  });
 
 /**
   2 [POST] /api/auth/login { "username": "sue", "password": "1234" }
@@ -57,7 +56,21 @@ const { checkPasswordLength, checkUsernameFree,checkUsernameExists} = require('.
     "message": "Invalid credentials"
   }
  */
+  router.post('/login', checkPasswordLength, checkUsernameExists, (req, res, next) => {
+    const password = req.body.password;
+    if(bcrypt.compareSync(password, req.user.password) == true) {
+        req.session.user = req.user; // note session
 
+        if(req.user.username == 'james') {
+            req.session.isAdmin = true;
+        }
+
+
+        res.json(`Welcome back, ${req.user.username}!`);
+    } else {
+        next({ status: 401, message: 'invalid credentials provided!' });
+    }
+});
 
 /**
   3 [GET] /api/auth/logout
