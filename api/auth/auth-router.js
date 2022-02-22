@@ -57,16 +57,10 @@ const { checkPasswordLength, checkUsernameFree,checkUsernameExists} = require('.
   }
  */
   router.post('/login', checkPasswordLength, checkUsernameExists, (req, res, next) => {
-    const password = req.body.password;
-    if(bcrypt.compareSync(password, req.user.password) == true) {
+    const {password} = req.body;
+    if(bcrypt.compareSync(password, req.user.password)) {
         req.session.user = req.user; // note session
-
-        if(req.user.username == 'james') {
-            req.session.isAdmin = true;
-        }
-
-
-        res.json(`Welcome back, ${req.user.username}!`);
+        res.json({status: 200, message: `Welcome ${req.user.username}!`});
     } else {
         next({ status: 401, message: 'invalid credentials provided!' });
     }
@@ -88,16 +82,16 @@ const { checkPasswordLength, checkUsernameFree,checkUsernameExists} = require('.
   }
  */
   router.get('/logout', (req, res, next) => {
-    if(req.session) {
+    if(req.session.user) {
         req.session.destroy(err => {
             if (err != null) {
-                next({ message: 'error while logging out' });
+                next({ status:200, message: 'error while logging out' });
             } else {
-                res.json('logged out');
+                res.json({status:200, message: 'logged out'});
             }
         });
     } else {
-        req.end();
+      res.json({status:200, message: 'no session'});
     }
 });
  

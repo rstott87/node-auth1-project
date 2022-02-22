@@ -1,8 +1,11 @@
 const express = require("express");
 const helmet = require("helmet");
+
 const cors = require("cors");
 
 const session = require('express-session');
+const Store = require('connect-session-knex')(session)
+const knex = require('../data/db-config')
 
 const usersRouter = require('./users/users-router.js') // note session
 const authRouter = require('./auth/auth-router.js')
@@ -22,19 +25,29 @@ const authRouter = require('./auth/auth-router.js')
 
 const server = express();
 
-const sessionConfig = { // note session
-  name: 'bloom_gp_auth1',
-  secret: 'keep it secret, keep it safe!',
+server.use(session(
+  { // note session
+  name: "chocolatechip",
+  secret: 'shh',
+  saveUnitialized: false,
+  resave: false,
+  store: new Store({
+    knex,
+    createTable: true,
+    clearInterval: 1000 * 60 * 10,
+    tablename: 'sessions',
+    sidfieldname: 'sid',
+    //sameSite: 'none'
+  }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24,
+    maxAge: 1000 * 60 * 10,
     secure: false,
     httpOnly: true,
   },
-  resave: false,
-  saveUnitialized: false,
-};
+})
+);
 
-server.use(session(sessionConfig));
+
 
 server.use(helmet());
 server.use(express.json());

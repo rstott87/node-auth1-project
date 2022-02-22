@@ -11,7 +11,7 @@ const Users = require('../users/users-model');
 
 function restricted(req, res, next) {
   if(req.session.user == null) {
-      next({ status: 401, message: 'this endpoint is restricted!' });
+      next({ status: 401, message: 'You shall not pass' });
   } else {
       next();
   }
@@ -43,7 +43,7 @@ async function checkUsernameFree(req, res, next) {
 async function checkUsernameExists(req, res, next) {
   const user = await Users.findBy({ username: req.user.username }).first();
   if(user == null) {
-      next({ status: 400, message: `user '${req.user.username}' does not exist!` });
+      next({ status: 400, message: `invalid credentials` });
   } else {
       req.user = user;
       next();
@@ -60,7 +60,7 @@ async function checkUsernameExists(req, res, next) {
 */
 function checkPasswordLength(req, res, next) {
   if(!req.body.password || req.body.password.length < 3) {
-    next({ status: 422, message: 'password is required and must be longer than 3 characters' });
+    next({ status: 422, message: 'Password must be longer than 3 chars' });
 } else {
     req.user = {
         username: req.body.username.trim(),
